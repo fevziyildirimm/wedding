@@ -43,10 +43,24 @@
             transition: opacity 0.5s ease;
         }
 
+        video::-webkit-media-controls {
+            display: none !important;
+        }
+
+        video {
+            outline: none;
+        }
+
+
         .video-screen.hidden {
             opacity: 0;
             pointer-events: none;
         }
+        .video-screen {
+            background: #000;
+            -webkit-transform: translateZ(0);
+        }
+
 
         .click-hint {
             position: absolute;
@@ -346,9 +360,13 @@
 <body>
     <!-- Video Ekranı -->
     <div class="video-screen" id="videoScreen">
-        <video id="invitationVideo">
-            <source src="video.mp4" type="video/mp4">
-        </video>
+        <video id="invitationVideo"
+        playsinline
+        webkit-playsinline
+        muted
+        preload="auto">
+        <source src="video.mp4" type="video/mp4">
+    </video>
         <div class="click-hint" id="clickHint">Başlatmak için tıklayın</div>
     </div>
 
@@ -456,9 +474,11 @@
 
         // Ekrana tıklandığında
         videoScreen.addEventListener('click', function() {
-            clickHint.classList.add('hidden');
-            video.play();
-        });
+    clickHint.classList.add('hidden');
+    video.play().then(() => {
+        video.muted = false;
+    });
+});
 
         // Video süresini kontrol et ve son 2 saniyede bulanıklık başlat
         video.addEventListener('timeupdate', function() {
