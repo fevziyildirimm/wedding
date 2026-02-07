@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Davetiye</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cream: #FFF1DC;
+            --cream-light: #FFFBF5;
+            --rose: #C4968C;
+            --text-dark: #5D4E47;
+            --text-light: #8B7D76;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--cream) 0%, #F5E8DC 100%);
+        }
+
+        /* Video Ekranı */
+        .video-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+            transition: opacity 0.5s ease;
+        }
+
+        .video-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .click-hint {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            animation: pulse 2s infinite;
+            pointer-events: none;
+        }
+
+        .click-hint.hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        video {
+            max-width: 100%;
+            max-height: 100vh;
+            object-fit: contain;
+            transition: filter 0.3s ease;
+        }
+
+        /* Parlama Geçiş Efekti */
+        .flash-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
+            transition: opacity 0.6s ease;
+        }
+
+        .flash-transition.active {
+            opacity: 1;
+        }
+
+        /* Davetiye İçeriği */
+        .invitation-content {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.8s ease;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .invitation-content.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Ana Kart */
+        .card {
+            position: relative;
+            background: var(--cream-light);
+            border: 1.5px solid var(--rose);
+            border-radius: 8px;
+            padding: 60px 50px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(93, 78, 71, 0.1);
+            text-align: center;
+        }
+
+        /* Halka İkonu */
+        .rings-icon {
+            margin: 0 auto 30px;
+            width: 120px;
+            height: 80px;
+        }
+
+        /* Yıldız Dekorasyonları */
+        .star {
+            position: absolute;
+            color: var(--rose);
+            font-size: 14px;
+            opacity: 0.6;
+        }
+
+        .star1 { top: 40px; left: 48%; }
+        .star2 { top: 50px; right: 35%; }
+        .star3 { top: 60px; left: 35%; }
+        .star4 { bottom: 120px; left: 40%; }
+        .star5 { bottom: 130px; right: 42%; }
+
+        /* İsimler */
+        .couple-names {
+            font-family: 'Great Vibes', cursive;
+            font-size: 64px;
+            color: var(--rose);
+            margin: 20px 0 40px;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        /* Aileler */
+        .families {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        .family-name {
+            font-size: 18px;
+            color: var(--text-dark);
+            font-weight: 300;
+            font-style: italic;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 17px;
+            color: var(--text-dark);
+            margin: 30px 0;
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        /* Çizgiler */
+        .divider {
+            width: 280px;
+            height: 1px;
+            background: var(--rose);
+            margin: 30px auto;
+        }
+
+        /* Geri Sayım */
+        .countdown {
+            margin: 35px 0;
+        }
+
+        .countdown-title {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 15px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        .countdown-timer {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .countdown-item {
+            text-align: center;
+        }
+
+        .countdown-value {
+            font-size: 32px;
+            color: var(--rose);
+            font-weight: 400;
+            display: block;
+        }
+
+        .countdown-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 3px;
+            font-weight: 300;
+        }
+
+        /* Tarih & Saat */
+        .date-time {
+            margin: 30px 0;
+        }
+
+        .date {
+            font-size: 28px;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-weight: 300;
+        }
+
+        .time {
+            font-size: 24px;
+            color: var(--text-dark);
+            font-weight: 300;
+        }
+
+        /* Mekan */
+        .venue-section {
+            margin: 30px 0;
+        }
+
+        .venue-name {
+            font-size: 22px;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .venue-address {
+            font-size: 15px;
+            color: var(--text-light);
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        /* Konum Butonu */
+        .location-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 25px;
+            background: transparent;
+            color: var(--rose);
+            text-decoration: none;
+            border: 1px solid var(--rose);
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .location-btn:hover {
+            background: var(--rose);
+            color: var(--cream-light);
+        }
+
+        /* Animasyonlar */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card > *:not(.star) {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .card > *:nth-child(2) { animation-delay: 0.1s; }
+        .card > *:nth-child(3) { animation-delay: 0.2s; }
+        .card > *:nth-child(4) { animation-delay: 0.3s; }
+        .card > *:nth-child(5) { animation-delay: 0.4s; }
+        .card > *:nth-child(6) { animation-delay: 0.5s; }
+        .card > *:nth-child(7) { animation-delay: 0.6s; }
+        .card > *:nth-child(8) { animation-delay: 0.7s; }
+        .card > *:nth-child(9) { animation-delay: 0.8s; }
+        .card > *:nth-child(10) { animation-delay: 0.9s; }
+        .card > *:nth-child(11) { animation-delay: 1.0s; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card {
+                padding: 50px 35px;
+            }
+            
+            .couple-names {
+                font-size: 52px;
+            }
+
+            .families {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .countdown-timer {
+                gap: 15px;
+            }
+
+            .countdown-value {
+                font-size: 28px;
+            }
+
+            .divider {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Video Ekranı -->
+    <div class="video-screen" id="videoScreen">
+        <video id="invitationVideo">
+            <source src="video.mp4" type="video/mp4">
+        </video>
+        <div class="click-hint" id="clickHint">Başlatmak için tıklayın</div>
+    </div>
+
+    <!-- Parlama Geçiş Efekti -->
+    <div class="flash-transition" id="flashTransition"></div>
+
+    <!-- Davetiye İçeriği -->
+    <div class="invitation-content" id="invitationContent">
+        <div class="card">
+            <!-- Yıldız Dekorasyonları -->
+            <span class="star star1">✦</span>
+            <span class="star star2">✦</span>
+            <span class="star star3">✦</span>
+            <span class="star star4">✦</span>
+            <span class="star star5">✦</span>
+
+            <!-- Halka İkonu -->
+            <svg class="rings-icon" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+                <!-- Sol Halka -->
+                <ellipse cx="35" cy="45" rx="22" ry="15" fill="none" stroke="#A8B5A0" stroke-width="8" opacity="0.6" transform="rotate(-20 35 45)"/>
+                <ellipse cx="35" cy="45" rx="18" ry="12" fill="none" stroke="#A8B5A0" stroke-width="3" opacity="0.4" transform="rotate(-20 35 45)"/>
+                
+                <!-- Sağ Halka -->
+                <ellipse cx="70" cy="40" rx="22" ry="15" fill="none" stroke="#A8B5A0" stroke-width="8" opacity="0.6" transform="rotate(15 70 40)"/>
+                <ellipse cx="70" cy="40" rx="18" ry="12" fill="none" stroke="#A8B5A0" stroke-width="3" opacity="0.4" transform="rotate(15 70 40)"/>
+            </svg>
+            
+            <!-- İsimler -->
+            <div class="couple-names">Cansu & Ali</div>
+            
+            <!-- Aileler -->
+            <div class="families">
+                <div class="family">
+                    <div class="family-name">Ortahüner Ailesi</div>
+                    <div class="family-members">Gürbüz & Hülya</div>
+                </div>
+                <div class="family">
+                    <div class="family-name">Dağdelen Ailesi</div>
+                    <div class="family-members">Atilla & Şükran</div>
+                </div>
+            </div>
+            
+            <div class="subtitle">Bu mutlu günümüzde sizleri aramızda görmek isteriz.</div>
+            
+            <div class="divider"></div>
+
+            <!-- Geri Sayım -->
+            <div class="countdown">
+                <div class="countdown-title">Büyük Güne Kalan Süre</div>
+                <div class="countdown-timer">
+                    <div class="countdown-item">
+                        <span class="countdown-value" id="days">0</span>
+                        <span class="countdown-label">Gün</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-value" id="hours">0</span>
+                        <span class="countdown-label">Saat</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-value" id="minutes">0</span>
+                        <span class="countdown-label">Dakika</span>
+                    </div>
+                    <div class="countdown-item">
+                        <span class="countdown-value" id="seconds">0</span>
+                        <span class="countdown-label">Saniye</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- Tarih & Saat -->
+            <div class="date-time">
+                <div class="date">24 Temmuz 2026</div>
+                <div class="time">19:00</div>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- Mekan -->
+            <div class="venue-section">
+                <div class="venue-name">White Garden Luxury</div>
+                <div class="venue-address">
+                    Muhsin Yazıcıoğlu, Demir Sk. No:48<br>
+                    06760 Çubuk/Ankara
+                </div>
+                <a href="https://www.google.com/maps?q=40.19712579999999,33.0295066" 
+                   target="_blank" 
+                   class="location-btn">
+                   📍 Konumu Görüntüle
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const videoScreen = document.getElementById('videoScreen');
+        const clickHint = document.getElementById('clickHint');
+        const video = document.getElementById('invitationVideo');
+        const flashTransition = document.getElementById('flashTransition');
+        const invitationContent = document.getElementById('invitationContent');
+
+        // Video hızını 1.5x yap
+        video.playbackRate = 1.5;
+
+        // Ekrana tıklandığında
+        videoScreen.addEventListener('click', function() {
+            clickHint.classList.add('hidden');
+            video.play();
+        });
+
+        // Video süresini kontrol et ve son 2 saniyede bulanıklık başlat
+        video.addEventListener('timeupdate', function() {
+            const timeRemaining = video.duration - video.currentTime;
+            
+            // Son 2 saniye kala bulanıklık efektini başlat
+            if (timeRemaining <= 2 && timeRemaining > 0) {
+                const progress = (2 - timeRemaining) / 2; // 0'dan 1'e kadar
+                const blurAmount = progress * 10; // 0'dan 10px'e kadar bulanıklık
+                video.style.filter = `blur(${blurAmount}px)`;
+            }
+        });
+
+        // Video bittiğinde
+        video.addEventListener('ended', function() {
+            // Hemen parlama efektini başlat
+            flashTransition.classList.add('active');
+            
+            // Video ekranını hemen gizle
+            videoScreen.classList.add('hidden');
+            
+            // Kısa süre sonra parlama efektini kaldır ve davetiyeyi göster
+            setTimeout(() => {
+                flashTransition.classList.remove('active');
+                invitationContent.classList.add('visible');
+            }, 400);
+        });
+
+        // Video yüklenme hatası kontrolü
+        video.addEventListener('error', function(e) {
+            console.error('Video yükleme hatası:', e);
+            clickHint.textContent = 'Video yüklenemedi';
+        });
+
+        // Geri Sayım Fonksiyonu
+        let countdownInterval;
+
+        function startCountdown() {
+            // Düğün tarihi: 24 Temmuz 2026, Saat 19:00
+            const weddingDate = new Date('2026-07-24T19:00:00').getTime();
+            
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const distance = weddingDate - now;
+                
+                // Zaman hesaplamaları
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                
+                // Elementleri kontrol et
+                const daysEl = document.getElementById('days');
+                const hoursEl = document.getElementById('hours');
+                const minutesEl = document.getElementById('minutes');
+                const secondsEl = document.getElementById('seconds');
+                
+                if (daysEl) daysEl.textContent = days;
+                if (hoursEl) hoursEl.textContent = hours;
+                if (minutesEl) minutesEl.textContent = minutes;
+                if (secondsEl) secondsEl.textContent = seconds;
+                
+                // Eğer geri sayım bittiyse
+                if (distance < 0) {
+                    clearInterval(countdownInterval);
+                    const titleEl = document.querySelector('.countdown-title');
+                    if (titleEl) titleEl.textContent = 'Mutlu Günümüz!';
+                    if (daysEl) daysEl.textContent = '0';
+                    if (hoursEl) hoursEl.textContent = '0';
+                    if (minutesEl) minutesEl.textContent = '0';
+                    if (secondsEl) secondsEl.textContent = '0';
+                }
+            }
+            
+            // İlk güncelleme
+            updateCountdown();
+            
+            // Her saniye güncelle
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+
+        // Sayfa yüklendiğinde geri sayımı başlat (davetiye görünür olmasa bile)
+        window.addEventListener('load', function() {
+            startCountdown();
+        });
+    </script>
+</body>
+</html>
