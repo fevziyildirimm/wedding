@@ -39,47 +39,12 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            cursor: pointer;
             transition: opacity 0.5s ease;
         }
-
-        video::-webkit-media-controls {
-            display: none !important;
-        }
-
-        video {
-            outline: none;
-        }
-
 
         .video-screen.hidden {
             opacity: 0;
             pointer-events: none;
-        }
-        .video-screen {
-            background: #000;
-            -webkit-transform: translateZ(0);
-        }
-
-
-        .click-hint {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 18px;
-            animation: pulse 2s infinite;
-            pointer-events: none;
-        }
-
-        .click-hint.hidden {
-            display: none;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
         }
 
         video {
@@ -87,6 +52,36 @@
             max-height: 100vh;
             object-fit: contain;
             transition: filter 0.3s ease;
+            display: block;
+        }
+
+        /* Video üzerine overlay */
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .video-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .play-overlay-text {
+            color: white;
+            font-size: 18px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px 30px;
+            border-radius: 30px;
+            pointer-events: none;
         }
 
         /* Parlama Geçiş Efekti */
@@ -114,17 +109,20 @@
             left: 0;
             width: 100%;
             height: 100vh;
-            display: flex;
+            display: none;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             opacity: 0;
             transform: scale(0.95);
             transition: all 0.8s ease;
             overflow-y: auto;
-            padding: 20px;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 30px 20px;
         }
 
         .invitation-content.visible {
+            display: flex;
             opacity: 1;
             transform: scale(1);
         }
@@ -140,6 +138,8 @@
             width: 100%;
             box-shadow: 0 10px 40px rgba(93, 78, 71, 0.1);
             text-align: center;
+            margin: auto;
+            min-height: auto;
         }
 
         /* Halka İkonu */
@@ -330,29 +330,111 @@
 
         /* Responsive */
         @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+
+            .invitation-content {
+                padding: 20px 15px;
+                align-items: flex-start;
+            }
+
             .card {
-                padding: 50px 35px;
+                padding: 40px 25px;
+                margin-top: 0;
+                margin-bottom: 20px;
             }
             
+            .rings-icon {
+                width: 100px;
+                height: 65px;
+                margin-bottom: 20px;
+            }
+
             .couple-names {
-                font-size: 52px;
+                font-size: 48px;
+                margin: 15px 0 30px;
             }
 
             .families {
                 grid-template-columns: 1fr;
-                gap: 25px;
+                gap: 20px;
+            }
+
+            .family-name {
+                font-size: 16px;
+            }
+
+            .family-members {
+                font-size: 14px;
+            }
+
+            .subtitle {
+                font-size: 15px;
+                margin: 25px 0;
+            }
+
+            .countdown {
+                margin: 25px 0;
             }
 
             .countdown-timer {
-                gap: 15px;
+                gap: 12px;
             }
 
             .countdown-value {
-                font-size: 28px;
+                font-size: 26px;
+            }
+
+            .countdown-label {
+                font-size: 11px;
+            }
+
+            .date {
+                font-size: 24px;
+            }
+
+            .time {
+                font-size: 20px;
+            }
+
+            .venue-name {
+                font-size: 19px;
+            }
+
+            .venue-address {
+                font-size: 14px;
             }
 
             .divider {
-                width: 200px;
+                width: 180px;
+                margin: 25px auto;
+            }
+
+            .star {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 35px 20px;
+            }
+
+            .couple-names {
+                font-size: 42px;
+            }
+
+            .countdown-timer {
+                gap: 10px;
+            }
+
+            .countdown-value {
+                font-size: 22px;
+            }
+
+            .countdown-label {
+                font-size: 10px;
             }
         }
     </style>
@@ -360,14 +442,12 @@
 <body>
     <!-- Video Ekranı -->
     <div class="video-screen" id="videoScreen">
-        <video id="invitationVideo"
-        playsinline
-        webkit-playsinline
-        muted
-        preload="auto">
-        <source src="video.mp4" type="video/mp4">
-    </video>
-        <div class="click-hint" id="clickHint">Başlatmak için tıklayın</div>
+        <video id="invitationVideo" preload="metadata" playsinline webkit-playsinline>
+            <source src="video.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay" id="videoOverlay">
+            <div class="play-overlay-text">Başlatmak için tıklayın</div>
+        </div>
     </div>
 
     <!-- Parlama Geçiş Efekti -->
@@ -453,10 +533,10 @@
                     Muhsin Yazıcıoğlu, Demir Sk. No:48<br>
                     06760 Çubuk/Ankara
                 </div>
-                <a href="https://www.google.com/maps?q=40.19712579999999,33.0295066" 
+                <a href="https://www.google.com/maps/place/AKYOL+GARDEN+HOUSE,+Muhsin+Yaz%C4%B1c%C4%B1o%C4%9Flu,+06100+%C3%87ubuk%2FAnkara,+T%C3%BCrkiye/@40.197126,33.029507,15z/data=!4m6!3m5!1s0x408217454d88ccbb:0x6b4d0f960c5fbfdf!8m2!3d40.1977742!4d33.0365071!16s%2Fg%2F11vdbf6_qb?hl=tr-TR&gl=US" 
                    target="_blank" 
                    class="location-btn">
-                   📍 Konumu Görüntüle
+                    Konumu Görüntüle
                 </a>
             </div>
         </div>
@@ -464,21 +544,36 @@
 
     <script>
         const videoScreen = document.getElementById('videoScreen');
-        const clickHint = document.getElementById('clickHint');
+        const videoOverlay = document.getElementById('videoOverlay');
         const video = document.getElementById('invitationVideo');
         const flashTransition = document.getElementById('flashTransition');
         const invitationContent = document.getElementById('invitationContent');
 
+        // Video ilk kareyi göster
+        video.load();
+
         // Video hızını 1.5x yap
         video.playbackRate = 1.5;
 
-        // Ekrana tıklandığında
-        videoScreen.addEventListener('click', function() {
-    clickHint.classList.add('hidden');
-    video.play().then(() => {
-        video.muted = false;
-    });
-});
+        // Overlay'e tıklandığında videoyu başlat
+        videoOverlay.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            videoOverlay.classList.add('hidden');
+            
+            // Mobilde video oynatma
+            const playPromise = video.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Video oynatma hatası:", error);
+                    // Hata durumunda tekrar dene
+                    setTimeout(() => {
+                        video.play();
+                    }, 100);
+                });
+            }
+        });
 
         // Video süresini kontrol et ve son 2 saniyede bulanıklık başlat
         video.addEventListener('timeupdate', function() {
@@ -486,8 +581,8 @@
             
             // Son 2 saniye kala bulanıklık efektini başlat
             if (timeRemaining <= 2 && timeRemaining > 0) {
-                const progress = (2 - timeRemaining) / 2; // 0'dan 1'e kadar
-                const blurAmount = progress * 10; // 0'dan 10px'e kadar bulanıklık
+                const progress = (2 - timeRemaining) / 2;
+                const blurAmount = progress * 10;
                 video.style.filter = `blur(${blurAmount}px)`;
             }
         });
@@ -504,33 +599,38 @@
             setTimeout(() => {
                 flashTransition.classList.remove('active');
                 invitationContent.classList.add('visible');
+                
+                // Body scroll'u aktif et
+                document.body.style.overflow = 'hidden';
+                
+                // Sayfayı en üste kaydır
+                setTimeout(() => {
+                    invitationContent.scrollTop = 0;
+                }, 100);
             }, 400);
         });
 
         // Video yüklenme hatası kontrolü
         video.addEventListener('error', function(e) {
             console.error('Video yükleme hatası:', e);
-            clickHint.textContent = 'Video yüklenemedi';
+            videoOverlay.querySelector('.play-overlay-text').textContent = 'Video yüklenemedi';
         });
 
         // Geri Sayım Fonksiyonu
         let countdownInterval;
 
         function startCountdown() {
-            // Düğün tarihi: 24 Temmuz 2026, Saat 19:00
             const weddingDate = new Date('2026-07-24T19:00:00').getTime();
             
             function updateCountdown() {
                 const now = new Date().getTime();
                 const distance = weddingDate - now;
                 
-                // Zaman hesaplamaları
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
                 
-                // Elementleri kontrol et
                 const daysEl = document.getElementById('days');
                 const hoursEl = document.getElementById('hours');
                 const minutesEl = document.getElementById('minutes');
@@ -541,7 +641,6 @@
                 if (minutesEl) minutesEl.textContent = minutes;
                 if (secondsEl) secondsEl.textContent = seconds;
                 
-                // Eğer geri sayım bittiyse
                 if (distance < 0) {
                     clearInterval(countdownInterval);
                     const titleEl = document.querySelector('.countdown-title');
@@ -553,16 +652,22 @@
                 }
             }
             
-            // İlk güncelleme
             updateCountdown();
-            
-            // Her saniye güncelle
             countdownInterval = setInterval(updateCountdown, 1000);
         }
 
-        // Sayfa yüklendiğinde geri sayımı başlat (davetiye görünür olmasa bile)
+        // Sayfa yüklendiğinde geri sayımı başlat
         window.addEventListener('load', function() {
             startCountdown();
+        });
+
+        // Mobil cihazlarda video tam ekran olmasını engelle
+        video.addEventListener('webkitbeginfullscreen', function(e) {
+            e.preventDefault();
+        });
+
+        video.addEventListener('webkitendfullscreen', function(e) {
+            e.preventDefault();
         });
     </script>
 </body>
